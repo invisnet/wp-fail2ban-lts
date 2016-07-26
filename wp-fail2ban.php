@@ -3,16 +3,16 @@
  * Plugin Name: WP fail2ban
  * Plugin URI: https://charles.lecklider.org/wordpress/wp-fail2ban/
  * Description: Write all login attempts to syslog for integration with fail2ban.
- * Text Domain: wp-fail2ban 
- * Version: 3.0.0
- * Author: Charles Lecklider 
- * Author URI: https://charles.lecklider.org/ 
- * License: GPL2 
+ * Text Domain: wp-fail2ban
+ * Version: 3.0.3
+ * Author: Charles Lecklider
+ * Author URI: https://charles.lecklider.org/
+ * License: GPL2
  * SPDX-License-Identifier: GPL-2.0
  */
 
 /**
- *  Copyright 2012-15  Charles Lecklider  (email : wordpress@charles.lecklider.org)
+ *  Copyright 2012-16  Charles Lecklider  (email : wordpress@charles.lecklider.org)
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License, version 2, as
@@ -33,6 +33,22 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban;
 
 if (!defined('WP_FAIL2BAN')) {
 	define('WP_FAIL2BAN', true);
+
+	function admin_menu()
+	{
+		require_once('wp-fail2ban-admin.php');
+
+	  add_options_page('WP fail2ban','WP fail2ban','manage_options','wp-f2b',__NAMESPACE__.'\admin_settings');
+	}
+	add_action('admin_menu',__NAMESPACE__.'\admin_menu');
+
+	function load_plugin_textdomain()
+	{
+		load_textdomain('wp-f2b',dirname(__FILE__).'/lang/wp-f2b-'.get_locale().'.mo');
+		// TODO: find out why this gives a WSoD
+		// load_plugin_textdomain('wp-f2b', false, dirname(plugin_basename(__FILE__)).'/lang');
+	}
+	add_action('plugins_loaded',__NAMESPACE__.'\load_plugin_textdomain');
 
 	function openlog($log = LOG_AUTH, $custom_log = 'WP_FAIL2BAN_AUTH_LOG')
 	{
@@ -86,10 +102,17 @@ if (!defined('WP_FAIL2BAN')) {
 		add_filter( 'authenticate',
 					function($user, $username, $password)
 					{
-						if (!empty($username) && preg_match('/'.WP_FAIL2BAN_BLOCKED_USERS.'/i', $username)) {
-							openlog();
-							\syslog(LOG_NOTICE,"Blocked authentication attempt for $username from ".remote_addr());
-							bail();
+						if (!empty($username)) {
+							if (is_array(WP_FAIL2BAN_BLOCKED_USERS)) {
+								$matched = in_array($username, WP_FAIL2BAN_BLOCKED_USERS);
+							} else {
+								$matched = preg_match('/'.WP_FAIL2BAN_BLOCKED_USERS.'/i', $username);
+							}
+							if ($matched) {
+								openlog();
+								\syslog(LOG_NOTICE,"Blocked authentication attempt for $username from ".remote_addr());
+								bail();
+							}
 						}
 
 						return $user;
@@ -125,6 +148,28 @@ if (!defined('WP_FAIL2BAN')) {
 					});
 	}
 	/*
+	 * @since 3.1.0
+	 */
+	if (defined('WP_FAIL2BAN_LOG_SPAM') && true === WP_FAIL2BAN_LOG_SPAM) {
+		function log_spam($comment_id, $comment_status)
+		{
+			if ('spam' === $comment_status) {
+				if (is_null($comment = get_comment($comment_id,ARRAY_A))) {
+					// something went wrong
+					// TODO: decide where to log this
+				} else {
+					$remote_addr = (empty($comment['comment_author_IP']))
+						? 'unknown'
+						: $comment['comment_author_IP'];
+					openlog(LOG_USER,'WP_FAIL2BAN_COMMENT_LOG');
+					\syslog(LOG_INFO,"Comment {$comment_id} from {$remote_addr} marked as spam");
+				}
+			}
+		}
+		add_action( 'comment_post', __NAMESPACE__.'\log_spam', 10, 2 );
+		add_action( 'wp_set_comment_status', __NAMESPACE__.'\log_spam', 10, 2 );
+	}
+	/*
 	 * @since 1.0.0
 	 */
 	add_action( 'wp_login',
@@ -142,29 +187,37 @@ if (!defined('WP_FAIL2BAN')) {
 					$msg = (wp_cache_get($username, 'userlogins'))
 							? "Authentication failure for $username from "
 							: "Authentication attempt for unknown user $username from ";
+					$msg .= remote_addr();
+					if (class_exists('wp_xmlrpc_server',false)) {
+						$msg .= ' via XML-RPC';
+					}
 					openlog();
-					\syslog(LOG_NOTICE,$msg.remote_addr());
+					\syslog(LOG_NOTICE,$msg);
 				});
 	/*
 	 * @since 3.0.0
 	 */
-	add_action( 'xmlrpc_login_error',
-				function($error, $user)
-				{
-					openlog();
-					\syslog(LOG_NOTICE,'XML-RPC authentication failure from '.remote_addr());
-					bail();
-				},10,2);
+	$v = explode('.',$wp_version);
+	if (4 == $v[0] && 5 > $v[1]) {
+		// prevent double logging
+		// will be removed for WP4.7
+		add_action( 'xmlrpc_login_error',
+					function($error, $user)
+					{
+						openlog();
+						\syslog(LOG_NOTICE,'XML-RPC authentication failure from '.remote_addr());
+						bail();
+					},10,2);
+	}
 	/*
 	 * @since 3.0.0
 	 */
 	add_filter( 'xmlrpc_pingback_error',
 				function($ixr_error)
 				{
-					if ( $ixr_error->code === 48 )
+					if (48 === $ixr_error->code)
 						return $ixr_error;
 					openlog();
 					\syslog(LOG_NOTICE,'Pingback error '.$ixr_error->code.' generated from '.remote_addr());
 				},5);
 }
-
