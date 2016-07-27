@@ -22,21 +22,27 @@ function show_BLOCKED_USERS($constants)
 <?php
 }
 
-function show_BLOCK_USER_ENUMERATION($constants)
+function show_checkbox($constants, $key)
 {
-  $value = ($constants['BLOCK_USER_ENUMERATION'])
-            ? $constants['BLOCK_USER_ENUMERATION']
-            : @WP_FAIL2BAN_USER_ENUMERATION;
+  $value = ($constants[$key])
+            ? $constants[$key]
+            : @constant("WP_FAIL2BAN_{$key}");
 ?>
-  <fieldset>
-    <label for="BLOCK_USER_ENUMERATION">
-      <input name="BLOCK_USER_ENUMERATION"
-             type="checkbox"
-             value="1"
-             <?=checked($value,true,false)?>>
-      <?=__('BLOCK_USER_ENUMERATION','wp-f2b')?>
-    </label>
-  </fieldset>
+        <tr>
+          <th scope="row"><?=__("{$key}__TH",'wp-f2b')?></th>
+          <td>
+            <fieldset>
+              <label for="<?=$key?>">
+                <input name="<?=$key?>"
+                       type="checkbox"
+                       value="1"
+                       <?=checked($value,true,false)?>>
+                <?=__("{$key}__LABEL",'wp-f2b')?>
+              </label>
+            </fieldset>
+            <p><?=__("{$key}__BLURB",'wp-f2b')?></p>
+          </td>
+        </tr>
 <?php
 }
 
@@ -168,30 +174,21 @@ function admin_settings()
   ?></textarea>
 <?php endif; ?>
   <form method="post">
-    <h2>Things to Block</h2>
+    <h2><?=__('H2__THINGS_TO_BLOCK','wp-f2b')?></h2>
     <table class="form-table">
       <tbody>
         <tr>
-          <th scope="row">User Logins</th>
+          <th scope="row"><?=__('BLOCKED_USERS__TH','wp-f2b')?></th>
           <td><?php show_BLOCKED_USERS($constants); ?></td>
         </tr>
-        <tr>
-          <th scope="row">User Enumeration</th>
-          <td><?php show_BLOCK_USER_ENUMERATION($constants)?></td>
-        </tr>
+<?php show_checkbox($constants,'BLOCK_USER_ENUMERATION'); ?>
       </tbody>
     </table>
-    <h2>What to Log</h2>
+    <h2><?=__('H2__WHAT_TO_LOG','wp-f2b')?></h2>
     <table class="form-table">
       <tbody>
-        <tr>
-          <th scope="row">WP_FAIL2BAN_LOG_PINGBACKS</th>
-          <td><?=check_defined('WP_FAIL2BAN_LOG_PINGBACKS')?></td>
-        </tr>
-        <tr>
-          <th scope="row">WP_FAIL2BAN_LOG_SPAM</th>
-          <td><?=check_defined('WP_FAIL2BAN_LOG_SPAM')?></td>
-        </tr>
+<?php show_checkbox($constants,'LOG_PINGBACKS'); ?>
+<?php show_checkbox($constants,'LOG_SPAM'); ?>
       </tbody>
     </table>
     <h2>Where to Log</h2>
@@ -214,10 +211,7 @@ function admin_settings()
     <h2>How to Log</h2>
     <table class="form-table">
       <tbody>
-        <tr>
-          <th scope="row">WP_FAIL2BAN_SYSLOG_SHORT_TAG</th>
-          <td><?=check_defined('WP_FAIL2BAN_SYSLOG_SHORT_TAG')?></td>
-        </tr>
+<?php show_checkbox($constants,'SYSLOG_SHORT_TAG'); ?>
         <tr>
           <th scope="row">WP_FAIL2BAN_PROXIES</th>
           <td><?=check_defined('WP_FAIL2BAN_PROXIES')?></td>

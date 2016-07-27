@@ -2,17 +2,23 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WP fail2ban 4.0.0\n"
 "POT-Creation-Date: 2016-07-24 19:42+0100\n"
-"PO-Revision-Date: 2016-07-25 15:13+0100\n"
+"PO-Revision-Date: 2016-07-27 13:28+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Poedit 1.8.7\n"
 "X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
 "X-Poedit-Basepath: .\n"
-"Language: en-US\n"
+"Language: en_US\n"
 "X-Poedit-SourceCharset: UTF-8\n"
+
+msgid "H2__THINGS_TO_BLOCK"
+msgstr "Things to Block"
+
+msgid "BLOCKED_USERS__TH"
+msgstr "User Logins"
 
 msgid "BLOCKED_USERS__PLACEHOLDER"
 msgstr "placeholder"
@@ -22,3 +28,18 @@ msgstr "blurb"
 
 msgid "BLOCKED_USERS__BUTTON_EXISTING"
 msgstr "Allow only existing users"
+
+msgid "BLOCK_USER_ENUMERATION__TH"
+msgstr "User Enumeration"
+
+msgid "BLOCK_USER_ENUMERATION__LABEL"
+msgstr "meh"
+
+msgid "H2__WHAT_TO_LOG"
+msgstr "What to Log"
+
+msgid "LOG_PINGBACKS__TH"
+msgstr "Pingbacks"
+
+msgid "LOG_PINGBACKS__LABEL"
+msgstr "meh"
