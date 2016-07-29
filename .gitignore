@@ -3,4 +3,4 @@ makefile
 readme.txt
 wp-fail2ban.php.sig
 wp-fail2ban@md
-
+vendor/

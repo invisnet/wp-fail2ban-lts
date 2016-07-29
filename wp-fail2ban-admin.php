@@ -9,16 +9,16 @@ function show_BLOCKED_USERS($constants)
             ? $constants['BLOCKED_USERS']
             : @WP_FAIL2BAN_BLOCKED_USERS;
   if (is_array($value)) {
-    $value = join(',',$value);
+    $value = join(',', $value);
   }
 ?>
   <input class="regular-text"
          name="BLOCKED_USERS"
-         placeholder="<?=__('BLOCKED_USERS__PLACEHOLDER','wp-f2b')?>"
+         placeholder="<?=__('BLOCKED_USERS__PLACEHOLDER', 'wp-f2b')?>"
          type="text"
          value="<?=htmlspecialchars($value)?>">
-  <p><?=__('BLOCKED_USERS__BLURB','wp-f2b')?></p>
-  <button><?=__('BLOCKED_USERS__BUTTON_EXISTING','wp-f2b')?></button>
+  <p><?=__('BLOCKED_USERS__BLURB', 'wp-f2b')?></p>
+  <button><?=__('BLOCKED_USERS__BUTTON_EXISTING', 'wp-f2b')?></button>
 <?php
 }
 
@@ -29,7 +29,7 @@ function show_checkbox($constants, $key)
             : @constant("WP_FAIL2BAN_{$key}");
 ?>
         <tr>
-          <th scope="row"><?=__("{$key}__TH",'wp-f2b')?></th>
+          <th scope="row"><?=__("{$key}__TH", 'wp-f2b')?></th>
           <td>
             <fieldset>
               <label for="<?=$key?>">
@@ -37,10 +37,10 @@ function show_checkbox($constants, $key)
                        type="checkbox"
                        value="1"
                        <?=checked($value,true,false)?>>
-                <?=__("{$key}__LABEL",'wp-f2b')?>
+                <?=__("{$key}__LABEL", 'wp-f2b')?>
               </label>
             </fieldset>
-            <p><?=__("{$key}__BLURB",'wp-f2b')?></p>
+            <p><?=__("{$key}__BLURB", 'wp-f2b')?></p>
           </td>
         </tr>
 <?php
@@ -137,12 +137,12 @@ function admin_settings()
   if ('POST' == $_SERVER['REQUEST_METHOD']) {
   // WP_FAIL2BAN_BLOCKED_USERS
     if (PHP_MAJOR_VERSION >= 7) {
-      $constants['BLOCKED_USERS'] = explode(',',@$_POST['BLOCKED_USERS']);
+      $constants['BLOCKED_USERS'] = explode(',', @$_POST['BLOCKED_USERS']);
       if (1 == count($constants['BLOCKED_USERS'])) {
         $constants['BLOCKED_USERS'] = $constants['BLOCKED_USERS'][0];
       }
     } else {
-      $constants['BLOCKED_USERS'] = str_replace(',','|',@$_POST['BLOCKED_USERS']);
+      $constants['BLOCKED_USERS'] = str_replace(',', '|', @$_POST['BLOCKED_USERS']);
       if ($constants['BLOCKED_USERS'][0] != '^') {
         $constants['BLOCKED_USERS'] = '^'.$constants['BLOCKED_USERS'];
       }
@@ -162,11 +162,11 @@ function admin_settings()
   <h1>WP fail2ban</h1>
 <?php if ('POST' == $_SERVER['REQUEST_METHOD']): ?>
   <textarea readonly="readonly" cols="100" rows="11"><?=
-    join("\n",array_map(function($k,$v) {
+    join("\n", array_map(function($k, $v) {
       $line = false;
 
       if ($v) {
-        $line = "define('WP_FAIL2BAN_{$k}', ".((is_array($v)) ? "['".join("','",$v)."']" : "'{$v}'").');';
+        $line = "define('WP_FAIL2BAN_{$k}', ".((is_array($v)) ? "['".join("','", $v)."']" : "'{$v}'").');';
       }
 
       return $line;
@@ -174,21 +174,23 @@ function admin_settings()
   ?></textarea>
 <?php endif; ?>
   <form method="post">
-    <h2><?=__('H2__THINGS_TO_BLOCK','wp-f2b')?></h2>
+    <h2><?=__('H2__THINGS_TO_BLOCK', 'wp-f2b')?></h2>
     <table class="form-table">
       <tbody>
         <tr>
-          <th scope="row"><?=__('BLOCKED_USERS__TH','wp-f2b')?></th>
+          <th scope="row"><?=__('BLOCKED_USERS__TH', 'wp-f2b')?></th>
           <td><?php show_BLOCKED_USERS($constants); ?></td>
         </tr>
-<?php show_checkbox($constants,'BLOCK_USER_ENUMERATION'); ?>
+<?php show_checkbox($constants, 'BLOCK_USER_ENUMERATION'); ?>
       </tbody>
     </table>
-    <h2><?=__('H2__WHAT_TO_LOG','wp-f2b')?></h2>
+    <h2><?=__('H2__WHAT_TO_LOG', 'wp-f2b')?></h2>
     <table class="form-table">
       <tbody>
-<?php show_checkbox($constants,'LOG_PINGBACKS'); ?>
-<?php show_checkbox($constants,'LOG_SPAM'); ?>
+<?php show_checkbox($constants, 'LOG_PINGBACKS'); ?>
+<?php show_checkbox($constants, 'LOG_SPAM'); ?>
+<?php show_checkbox($constants, 'LOG_PASSWORD_REQUEST'); ?>
+<?php show_checkbox($constants, 'LOG_PASSWORD_RESET'); ?>
       </tbody>
     </table>
     <h2>Where to Log</h2>
