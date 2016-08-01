@@ -14,7 +14,7 @@ class LogSpamTest extends TestCase
 
     function testSpam()
     {
-        $this->expectOutputString('6|Comment 1 from 255.255.255.255 marked as spam');
+        $this->expectOutputRegex('/\d+|Spam comment 1 from 255.255.255.255/');
         log_spam_comment(1, 'spam');
     }
 }

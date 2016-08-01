@@ -11,7 +11,7 @@ class BlockUserEnumerationTest extends TestCase
     {
         $_GET['author'] = 1;
 
-        $this->expectOutputString('5|Blocked user enumeration attempt from 255.255.255.255');
+        $this->expectOutputRegex('/\d+|Blocked user enumeration attempt from 255.255.255.255/');
         redirect_canonical('redirect', 'requested');
     }
 
