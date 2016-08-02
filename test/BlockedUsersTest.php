@@ -1,5 +1,4 @@
 <?php
-use PHPUnit\Framework\Exception;
 use PHPUnit\Framework\TestCase;
 use function org\lecklider\charles\wordpress\wp_fail2ban\authenticate;
 

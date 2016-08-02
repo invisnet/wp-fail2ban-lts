@@ -39,14 +39,14 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
         define('WP_FAIL2BAN_OPENLOG_OPTIONS', LOG_NDELAY|LOG_PID);
     }
     /**
-     * Make sure all logs are defined.
+     * Make sure all custom logs are defined.
      * @since 3.5.0
      */
     if (!defined('WP_FAIL2BAN_AUTH_LOG')) {
         define('WP_FAIL2BAN_AUTH_LOG', LOG_AUTH);
     }
     if (!defined('WP_FAIL2BAN_COMMENT_LOG')) {
-        define('WP_FAIL2BAN_COMMENT_LOG', LOG_AUTH);
+        define('WP_FAIL2BAN_COMMENT_LOG', LOG_USER);
     }
     if (!defined('WP_FAIL2BAN_PINGBACK_LOG')) {
         define('WP_FAIL2BAN_PINGBACK_LOG', LOG_USER);
@@ -159,7 +159,8 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
 	 * @since 2.1.0
 	 */
 	if (defined('WP_FAIL2BAN_BLOCK_USER_ENUMERATION') && true === WP_FAIL2BAN_BLOCK_USER_ENUMERATION) {
-        function redirect_canonical($redirect_url, $requested_url) {
+        function redirect_canonical($redirect_url, $requested_url)
+        {
             if (intval(@$_GET['author'])) {
                 openlog();
                 syslog(LOG_NOTICE, 'Blocked user enumeration attempt');
@@ -176,7 +177,8 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
 	 * @since 2.2.0
 	 */
 	if (defined('WP_FAIL2BAN_LOG_PINGBACKS') && true === WP_FAIL2BAN_LOG_PINGBACKS) {
-        function xmlrpc_call($call) {
+        function xmlrpc_call($call)
+        {
             if ('pingback.ping' == $call) {
                 openlog('WP_FAIL2BAN_PINGBACK_LOG');
                 syslog(LOG_INFO, 'Pingback requested');
@@ -184,6 +186,21 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
         }
 		add_action('xmlrpc_call', __NAMESPACE__.'\xmlrpc_call');
 	}
+
+
+    /**
+     * @since 3.5.0
+     */
+    if (defined('WP_FAIL2BAN_LOG_COMMENTS') && true === WP_FAIL2BAN_LOG_COMMENTS) {
+        function notify_post_author($maybe_notify, $comment_ID)
+        {
+            openlog('WP_FAIL2BAN_COMMENT_LOG');
+            syslog(LOG_INFO, "Comment {$comment_ID}");
+
+            return $maybe_notify;
+        }
+        add_filter('notify_post_author', __NAMESPACE__.'\notify_post_author', 10, 2);
+    }
 
 
 	/**
@@ -200,7 +217,7 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
 					$remote_addr = (empty($comment['comment_author_IP']))
 						? 'unknown'
 						: $comment['comment_author_IP'];
-					openlog('WP_FAIL2BAN_COMMENT_LOG');
+					openlog();
 					syslog(LOG_INFO, "Spam comment {$comment_id}", $remote_addr);
 				}
 			}
