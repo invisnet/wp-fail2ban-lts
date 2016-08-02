@@ -79,12 +79,7 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
      */
     function syslog($level, $msg, $remote_addr = null)
     {
-        if (is_null($remote_addr)) {
-            $remote_addr = remote_addr();
-        }
-        $msg .= ' from '.$remote_addr;
-
-        \syslog($level, $msg);
+        \syslog($level, $msg.' from '.((is_null($remote_addr)) ? remote_addr() : $remote_addr));
 
         /**
          * @todo Remove this once phpunit can handle stderr.
