@@ -30,55 +30,81 @@
 
 namespace org\lecklider\charles\wordpress\wp_fail2ban
 {
-    /*
+    /**
+     * Allow custom openlog openssl_get_cert_locations.
+     * e.g. you may not want the PID if logging remotely.
      * @since 3.5.0
      */
-	function admin_menu()
-	{
-		require_once('wp-fail2ban-admin.php');
-
-	  add_options_page('WP fail2ban', 'WP fail2ban', 'manage_options', 'wp-f2b', __NAMESPACE__.'\admin_settings');
-	}
-	add_action('admin_menu', __NAMESPACE__.'\admin_menu');
-
-    /*
+    if (!defined('WP_FAIL2BAN_OPENLOG_OPTIONS')) {
+        define('WP_FAIL2BAN_OPENLOG_OPTIONS', LOG_NDELAY|LOG_PID);
+    }
+    /**
+     * Make sure all custom logs are defined.
      * @since 3.5.0
      */
-	function load_plugin_textdomain()
-	{
-		load_textdomain('wp-f2b', dirname(__FILE__).'/lang/wp-f2b-'.get_locale().'.mo');
-		// TODO: find out why this gives a WSoD
-		// load_plugin_textdomain('wp-f2b', false, dirname(plugin_basename(__FILE__)).'/lang');
-	}
-	add_action('plugins_loaded', __NAMESPACE__.'\load_plugin_textdomain');
+    if (!defined('WP_FAIL2BAN_AUTH_LOG')) {
+        define('WP_FAIL2BAN_AUTH_LOG', LOG_AUTH);
+    }
+    if (!defined('WP_FAIL2BAN_COMMENT_LOG')) {
+        define('WP_FAIL2BAN_COMMENT_LOG', LOG_USER);
+    }
+    if (!defined('WP_FAIL2BAN_PINGBACK_LOG')) {
+        define('WP_FAIL2BAN_PINGBACK_LOG', LOG_USER);
+    }
 
-	function openlog($log = LOG_AUTH, $custom_log = 'WP_FAIL2BAN_AUTH_LOG')
+    /**
+     * @internal
+     */
+	function openlog($log = 'WP_FAIL2BAN_AUTH_LOG')
 	{
 		$tag	= (defined('WP_FAIL2BAN_SYSLOG_SHORT_TAG') && true === WP_FAIL2BAN_SYSLOG_SHORT_TAG)
 					? 'wp'
 					: 'wordpress';
-		$host	= (array_key_exists('WP_FAIL2BAN_HTTP_HOST',$_ENV))
+		$host	= (array_key_exists('WP_FAIL2BAN_HTTP_HOST', $_ENV))
 					? $_ENV['WP_FAIL2BAN_HTTP_HOST']
 					: $_SERVER['HTTP_HOST'];
-		\openlog("$tag($host)",
-				 LOG_NDELAY|LOG_PID,
-				 defined($custom_log) ? constant($custom_log) : $log);
+        /**
+         * Some varieties of syslogd have difficulty if $host is too long
+         * @since 3.5.0
+         */
+        if (defined('WP_FAIL2BAN_TRUNCATE_HOST') && intval(WP_FAIL2BAN_TRUNCATE_HOST) > 1) {
+            $host = substr($host, 0, intval(WP_FAIL2BAN_TRUNCATE_HOST));
+        }
+		\openlog("$tag($host)", WP_FAIL2BAN_OPENLOG_OPTIONS, constant($log));
 	}
 
-    function syslog($level, $msg)
+    /**
+     * @internal
+     * @since 3.5.0
+     */
+    function syslog($level, $msg, $remote_addr = null)
     {
-        if (defined('ABSPATH')) {
-            \syslog($level, $msg);
-        } else {
+        if (is_null($remote_addr)) {
+            $remote_addr = remote_addr();
+        }
+        $msg .= ' from '.$remote_addr;
+
+        \syslog($level, $msg);
+
+        /**
+         * @todo Remove this once phpunit can handle stderr.
+         */
+        if (!defined('ABSPATH')) {
             echo "$level|$msg";
         }
     }
 
+    /**
+     * @internal
+     */
 	function bail()
 	{
 		wp_die('Forbidden', 'Forbidden', array('response'=>403));
 	}
 
+    /**
+     * @internal
+     */
 	function remote_addr()
 	{
 		if (defined('WP_FAIL2BAN_PROXIES')) {
@@ -103,7 +129,9 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
 
 		return $_SERVER['REMOTE_ADDR'];
 	}
-	/*
+
+
+	/**
 	 * @since 2.0.0
 	 */
     function authenticate($user, $username, $password) {
@@ -115,7 +143,7 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
             }
             if ($matched) {
                 openlog();
-                syslog(LOG_NOTICE, "Blocked authentication attempt for $username from ".remote_addr());
+                syslog(LOG_NOTICE, "Blocked authentication attempt for {$username}");
                 bail();
             }
         }
@@ -125,14 +153,17 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
     if (defined('WP_FAIL2BAN_BLOCKED_USERS')) {
 		add_filter('authenticate', __NAMESPACE__.'\authenticate', 1, 3);
 	}
-	/*
+
+
+	/**
 	 * @since 2.1.0
 	 */
 	if (defined('WP_FAIL2BAN_BLOCK_USER_ENUMERATION') && true === WP_FAIL2BAN_BLOCK_USER_ENUMERATION) {
-        function redirect_canonical($redirect_url, $requested_url) {
+        function redirect_canonical($redirect_url, $requested_url)
+        {
             if (intval(@$_GET['author'])) {
                 openlog();
-                syslog(LOG_NOTICE, 'Blocked user enumeration attempt from '.remote_addr());
+                syslog(LOG_NOTICE, 'Blocked user enumeration attempt');
                 bail();
             }
 
@@ -140,19 +171,39 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
         }
 		add_filter('redirect_canonical', __NAMESPACE__.'\redirect_canonical', 10, 2);
 	}
-	/*
+
+
+	/**
 	 * @since 2.2.0
 	 */
 	if (defined('WP_FAIL2BAN_LOG_PINGBACKS') && true === WP_FAIL2BAN_LOG_PINGBACKS) {
-        function xmlrpc_call($call) {
+        function xmlrpc_call($call)
+        {
             if ('pingback.ping' == $call) {
-                openlog(LOG_USER, 'WP_FAIL2BAN_PINGBACK_LOG');
-                syslog(LOG_INFO, 'Pingback requested from '.remote_addr());
+                openlog('WP_FAIL2BAN_PINGBACK_LOG');
+                syslog(LOG_INFO, 'Pingback requested');
             }
         }
 		add_action('xmlrpc_call', __NAMESPACE__.'\xmlrpc_call');
 	}
-	/*
+
+
+    /**
+     * @since 3.5.0
+     */
+    if (defined('WP_FAIL2BAN_LOG_COMMENTS') && true === WP_FAIL2BAN_LOG_COMMENTS) {
+        function notify_post_author($maybe_notify, $comment_ID)
+        {
+            openlog('WP_FAIL2BAN_COMMENT_LOG');
+            syslog(LOG_INFO, "Comment {$comment_ID}");
+
+            return $maybe_notify;
+        }
+        add_filter('notify_post_author', __NAMESPACE__.'\notify_post_author', 10, 2);
+    }
+
+
+	/**
 	 * @since 3.5.0
 	 */
 	if (defined('WP_FAIL2BAN_LOG_SPAM') && true === WP_FAIL2BAN_LOG_SPAM) {
@@ -166,53 +217,60 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
 					$remote_addr = (empty($comment['comment_author_IP']))
 						? 'unknown'
 						: $comment['comment_author_IP'];
-					openlog(LOG_USER, 'WP_FAIL2BAN_COMMENT_LOG');
-					syslog(LOG_INFO, "Comment {$comment_id} from {$remote_addr} marked as spam");
+					openlog();
+					syslog(LOG_INFO, "Spam comment {$comment_id}", $remote_addr);
 				}
 			}
 		};
 		add_action('comment_post', __NAMESPACE__.'\log_spam_comment', 10, 2);
 		add_action('wp_set_comment_status', __NAMESPACE__.'\log_spam_comment', 10, 2);
 	}
-	/*
+
+
+	/**
 	 * @since 3.5.0
 	 */
 	if (defined('WP_FAIL2BAN_LOG_PASSWORD_REQUEST') && true === WP_FAIL2BAN_LOG_PASSWORD_REQUEST) {
         function retrieve_password($user_login)
         {
             openlog();
-            syslog(LOG_NOTICE, "Password reset requested for {$user_login} from ".remote_addr());
+            syslog(LOG_NOTICE, "Password reset requested for {$user_login}");
         }
 		add_action('retrieve_password', __NAMESPACE__.'\retrieve_password');
 	}
-	/*
+
+
+	/**
 	 * @since 1.0.0
 	 */
     function wp_login($user_login, $user)
     {
         openlog();
-        syslog(LOG_INFO, "Accepted password for {$user_login} from ".remote_addr());
+        syslog(LOG_INFO, "Accepted password for {$user_login}");
     }
 	add_action('wp_login', __NAMESPACE__.'\wp_login', 10, 2);
 
-	/*
+
+	/**
 	 * @since 1.0.0
 	 */
     function wp_login_failed($username)
     {
-        $msg = (wp_cache_get($username, 'userlogins'))
-                ? "Authentication failure for $username from "
-                : "Authentication attempt for unknown user $username from ";
-        $msg .= remote_addr();
-        if (class_exists('wp_xmlrpc_server', false)) {
-            $msg .= ' via XML-RPC';
-        }
+        global $wp_xmlrpc_server;
+
+        $msg  = ($wp_xmlrpc_server)
+                ? 'XML-RPC a'
+                : 'A';
+        $msg .= (wp_cache_get($username, 'userlogins'))
+                ? "uthentication failure for {$username}"
+                : "uthentication attempt for unknown user {$username}";
         openlog();
         syslog(LOG_NOTICE, $msg);
     }
 	add_action('wp_login_failed', __NAMESPACE__.'\wp_login_failed');
 
-	/*
+
+	/**
 	 * @since 3.0.0
 	 */
     function xmlrpc_login_error($error, $user)
@@ -221,13 +279,14 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
 
         if (++$attempts > 1) {
             openlog();
-            syslog(LOG_NOTICE, 'XML-RPC multicall authentication failure from '.remote_addr());
+            syslog(LOG_NOTICE, 'XML-RPC multicall authentication failure');
             bail();
         }
     }
 	add_action('xmlrpc_login_error', __NAMESPACE__.'\xmlrpc_login_error', 10, 2);
 
-	/*
+
+	/**
 	 * @since 3.0.0
 	 */
     function xmlrpc_pingback_error($ixr_error)
@@ -235,7 +294,7 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
         if (48 === $ixr_error->code)
             return $ixr_error;
         openlog();
-        syslog(LOG_NOTICE, 'Pingback error '.$ixr_error->code.' generated from '.remote_addr());
+        syslog(LOG_NOTICE, 'Pingback error '.$ixr_error->code.' generated');
     }
 	add_filter('xmlrpc_pingback_error', __NAMESPACE__.'\xmlrpc_pingback_error', 5);
 }

@@ -9,7 +9,7 @@ class LogPasswordRequestTest extends TestCase
 {
     function testRequest()
     {
-        $this->expectOutputString('5|Password reset requested for user_login from 255.255.255.255');
-        retrieve_password('user_login');
+        $this->expectOutputRegex('/\d+|Password reset requested for phpunit from 255.255.255.255/');
+        retrieve_password('phpunit');
     }
 }
