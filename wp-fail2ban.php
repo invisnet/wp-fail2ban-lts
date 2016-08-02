@@ -53,29 +53,6 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
     }
 
 
-    /*
-     * @since 3.5.0
-     */
-     function admin_menu()
-     {
-         require_once('wp-fail2ban-admin.php');
-
-         add_options_page('WP fail2ban', 'WP fail2ban', 'manage_options', 'wp-f2b', __NAMESPACE__.'\admin_settings');
-     }
-     add_action('admin_menu', __NAMESPACE__.'\admin_menu');
-
-    /*
-     * @since 3.5.0
-     */
-     function load_plugin_textdomain()
-     {
-        load_textdomain('wp-f2b', dirname(__FILE__).'/lang/wp-f2b-'.get_locale().'.mo');
-        // TODO: find out why this gives a WSoD
-        // load_plugin_textdomain('wp-f2b', false, dirname(plugin_basename(__FILE__)).'/lang');
-     }
-     add_action('plugins_loaded', __NAMESPACE__.'\load_plugin_textdomain');
-
-
     /**
      * @internal
      */
