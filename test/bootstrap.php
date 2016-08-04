@@ -64,6 +64,31 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
     }
 }
 
+namespace org\lecklider\charles\wordpress\wp_fail2ban\phpunit
+{
+    function request($url, $data = null)
+    {
+        $fp = fopen('/var/log/auth.log', 'r');
+        fseek($fp, 0, SEEK_END);
+
+        $res = curl_init('http://dev-wordpress.local/'.$url);
+        if (!is_null($data)) {
+            curl_setopt($res, CURLOPT_POST, true);
+            curl_setopt($res, CURLOPT_POSTFIELDS, $data);
+        }
+
+        ob_start();
+        curl_exec($res);
+        $http = ob_get_clean();
+
+        while($line = fgets($fp)) {
+            echo $line;
+        }
+
+        fclose($fp);
+    }
+}
+
 namespace
 {
     $_SERVER['HTTP_HOST'] = 'phpunit.local';

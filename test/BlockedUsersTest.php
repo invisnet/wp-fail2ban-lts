@@ -1,5 +1,6 @@
 <?php
 use PHPUnit\Framework\TestCase;
+use function org\lecklider\charles\wordpress\wp_fail2ban\phpunit\request;
 use function org\lecklider\charles\wordpress\wp_fail2ban\authenticate;
 
 
@@ -17,6 +18,12 @@ class BlockedUsersTest extends TestCase
 
         $this->expectOutputRegex('/\d+|Blocked authentication attempt for blocked from 255.255.255.255/');
         authenticate('user', 'blocked', 'password');
+    }
+
+    public function testRegexBlockedLive()
+    {
+        $this->expectOutputRegex('/Blocked authentication attempt for blocked from \d+\.\d+\.\d+\.\d+/');
+        request('/wp-login.php', ['log' => 'blocked', 'pwd' => 'password']);
     }
 
     public function testRegexAllowed()
