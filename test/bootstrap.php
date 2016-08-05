@@ -9,12 +9,12 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
 //  define('WP_FAIL2BAN_OPENLOG_OPTIONS', LOG_NDELAY|LOG_PID|LOG_PERROR);
 
 
-    require_once '../../../wp-includes/version.php';
-    require_once 'wp-fail2ban.php';
-
-
     global $wp_fail2ban;
     $wp_fail2ban = ['cache'=>[]];
+
+
+    require_once '../../../wp-includes/version.php';
+    require_once 'wp-fail2ban.php';
 
 
     function add_action($a,$b,$c=false,$d=false)
