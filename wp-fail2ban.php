@@ -4,7 +4,7 @@
  * Plugin URI: https://charles.lecklider.org/wordpress/wp-fail2ban/
  * Description: Write all login attempts to syslog for integration with fail2ban.
  * Text Domain: wp-fail2ban
- * Version: 3.5.0
+ * Version: 3.5.1
  * Author: Charles Lecklider
  * Author URI: https://charles.lecklider.org/
  * License: GPL2
@@ -177,11 +177,12 @@ if (defined('WP_FAIL2BAN_BLOCKED_USERS')) {
 /**
  * @since 2.1.0
  * @since 3.5.0 Refactored for unit testing
+ * @since 3.5.1 Check is_admin
  */
 if (defined('WP_FAIL2BAN_BLOCK_USER_ENUMERATION') && true === WP_FAIL2BAN_BLOCK_USER_ENUMERATION) {
     function parse_request($query)
     {
-        if (intval(@$query->query_vars['author'])) {
+        if (!is_admin() && intval(@$query->query_vars['author'])) {
             openlog();
             syslog(LOG_NOTICE, 'Blocked user enumeration attempt');
             bail();
