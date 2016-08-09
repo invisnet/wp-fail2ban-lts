@@ -27,6 +27,11 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban
         // stub
     }
 
+    function is_admin()
+    {
+        return false;
+    }
+
     function get_comment($id, $ary)
     {
         return [
