@@ -4,7 +4,7 @@
  * Plugin URI: https://charles.lecklider.org/wordpress/wp-fail2ban/
  * Description: Write all login attempts to syslog for integration with fail2ban.
  * Text Domain: wp-fail2ban
- * Version: 3.5.1
+ * Version: 3.5.2
  * Author: Charles Lecklider
  * Author URI: https://charles.lecklider.org/
  * License: GPL2
