@@ -5,7 +5,7 @@ Plugin URI: https://charles.lecklider.org/wordpress/wp-fail2ban/
 Tags: fail2ban, login, security, syslog
 Requires at least: 3.4.0
 Tested up to: 4.6.0
-Stable tag: 3.5.2
+Stable tag: 3.5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -193,7 +193,7 @@ By default, *WPf2b* uses LOG_AUTH for logging authentication success or failure.
 
 == Changelog ==
 
-= 3.5.2 =
+= 3.5.3 =
 * Bugfix for `wordpress-hard.conf`.
 
 = 3.5.1 =
@@ -264,7 +264,7 @@ By default, *WPf2b* uses LOG_AUTH for logging authentication success or failure.
 
 == Upgrade Notice ==
 
-= 3.5.2 =
+= 3.5.3 =
 You will need up update your `fail2ban` filters.
 
 = 3.5.1 =
