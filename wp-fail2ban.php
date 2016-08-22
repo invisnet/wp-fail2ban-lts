@@ -149,6 +149,8 @@ function remote_addr()
 /**
  * @since 2.0.0
  * @since 3.5.0 Refactored for unit testing
+ *
+ * @wp-f2b-hard Blocked authentication attempt for .*
  */
 function authenticate($user, $username, $password)
 {
@@ -178,6 +180,8 @@ if (defined('WP_FAIL2BAN_BLOCKED_USERS')) {
  * @since 2.1.0
  * @since 3.5.0 Refactored for unit testing
  * @since 3.5.1 Check is_admin
+ *
+ * @wp-f2b-hard Blocked user enumeration attempt
  */
 if (defined('WP_FAIL2BAN_BLOCK_USER_ENUMERATION') && true === WP_FAIL2BAN_BLOCK_USER_ENUMERATION) {
     function parse_request($query)
@@ -227,6 +231,8 @@ if (defined('WP_FAIL2BAN_LOG_COMMENTS') && true === WP_FAIL2BAN_LOG_COMMENTS) {
 
 /**
  * @since 3.5.0
+ *
+ * @wp-f2b-hard Spam comment \d+
  */
 if (defined('WP_FAIL2BAN_LOG_SPAM') && true === WP_FAIL2BAN_LOG_SPAM) {
 	function log_spam_comment($comment_id, $comment_status)
@@ -279,6 +285,11 @@ add_action('wp_login', __NAMESPACE__.'\wp_login', 10, 2);
 /**
  * @since 1.0.0
  * @since 3.5.0 Refactored for unit testing
+ *
+ * @wp-f2b-hard Authentication attempt for unknown user .*
+ * @wp-f2b-hard XML-RPC authentication attempt for unknown user .*
+ * @wp-f2b-soft Authentication failure for .*
+ * @wp-f2b-soft XML-RPC authentication failure
  */
 function wp_login_failed($username)
 {
@@ -299,6 +310,8 @@ add_action('wp_login_failed', __NAMESPACE__.'\wp_login_failed');
 /**
  * @since 3.0.0
  * @since 3.5.0 Refactored for unit testing
+ *
+ * @wp-f2b-hard XML-RPC multicall authentication failure
  */
 function xmlrpc_login_error($error, $user)
 {
@@ -316,6 +329,8 @@ add_action('xmlrpc_login_error', __NAMESPACE__.'\xmlrpc_login_error', 10, 2);
 /**
  * @since 3.0.0
  * @since 3.5.0 Refactored for unit testing
+ *
+ * @wp-f2b-hard Pingback error .* generated
  */
 function xmlrpc_pingback_error($ixr_error)
 {
