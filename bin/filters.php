@@ -18,6 +18,8 @@ foreach(array_keys($rules) as $key) {
 
 function filter($rules, $type)
 {
+    $header = 'Auto-generated: '.date(DATE_ATOM);
+
     $rules = $rules[$type];
     $failregex = "failregex = ^%(__prefix_line)s${rules[0]} from <HOST>$\n";
     for($i=1; $i<count($rules); $i++) {
@@ -27,6 +29,7 @@ function filter($rules, $type)
     $fp = fopen("filters.d/wordpress-$type.conf",'w+');
     fwrite($fp, <<<FILTER
 # Fail2Ban filter for WordPress $type failures
+# $header
 #
 
 [INCLUDES]
