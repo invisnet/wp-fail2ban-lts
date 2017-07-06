@@ -4,8 +4,8 @@ Author URI: https://charles.lecklider.org/
 Plugin URI: https://charles.lecklider.org/wordpress/wp-fail2ban/
 Tags: fail2ban, login, security, syslog
 Requires at least: 3.4.0
-Tested up to: 4.6.0
-Stable tag: 3.5.3
+Tested up to: 4.8
+Stable tag: 3.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,7 +28,7 @@ Requires PHP 5.3 or later.
 
 **CloudFlare and Proxy Servers**
 
-*WPf2b* can be configured to work with CloudFlare and other proxy servers. See `WP_FAIL2BAN_PROXIES` in the FAQ.
+*WPf2b* can be configured to work with CloudFlare and other proxy servers. For a brief overview see `WP_FAIL2BAN_PROXIES` in the FAQ; more details can be found [online](https://charles.lecklider.org/wordpress/wp-fail2ban/features/proxies).
 
 **Comments**
 
@@ -36,7 +36,7 @@ Requires PHP 5.3 or later.
 
 **Pingbacks**
 
-*WPf2b* logs failed pingbacks, and can log all pingbacks. See `WP_FAIL2BAN_LOG_PINGBACKS` in the FAQ.
+*WPf2b* logs failed pingbacks, and can log all pingbacks. For a brief overview see `WP_FAIL2BAN_LOG_PINGBACKS` in the FAQ; more details can be found [online](https://charles.lecklider.org/wordpress/wp-fail2ban/features/pingbacks).
 
 **Spam**
 
@@ -48,11 +48,11 @@ Requires PHP 5.3 or later.
 
 **Work-Arounds for Broken syslogd**
 
-*WPf2b* can be configured to work around most syslogd weirdness. See `WP_FAIL2BAN_SYSLOG_SHORT_TAG` and `WP_FAIL2BAN_HTTP_HOST` in the FAQ.
+*WPf2b* can be configured to work around most syslogd weirdness. For a brief overview see `WP_FAIL2BAN_SYSLOG_SHORT_TAG` and `WP_FAIL2BAN_HTTP_HOST` in the FAQ; more details can be found [online](https://charles.lecklider.org/wordpress/wp-fail2ban/features/broken-syslogd).
 
 **Blocking Users**
 
-*WPf2b* can be configured to short-cut the login process when the username matches a regex. See `WP_FAIL2BAN_BLOCKED_USERS` in the FAQ.
+*WPf2b* can be configured to short-cut the login process when the username matches a regex. For a brief overview see `WP_FAIL2BAN_BLOCKED_USERS` in the FAQ; more details can be found [online](https://charles.lecklider.org/wordpress/wp-fail2ban/features/blocking-users).
 
 
 
@@ -113,7 +113,7 @@ to `functions.php` will make *WPf2b* use `wp` as the syslog tag, rather than the
 
 If you've set `WP_FAIL2BAN_SYSLOG_SHORT_TAG` and defining `WP_FAIL2BAN_HTTP_HOST` for each virtual host isn't appropriate, you can set `WP_FAIL2BAN_TRUNCATE_HOST` to whatever value you need to make syslog happy:
 
-  define('WP_FAIL2BAN_TRUNCATE_HOST',8);
+	define('WP_FAIL2BAN_TRUNCATE_HOST',8);
 
 This does exactly what the name suggests: truncates the host name to the length you specify. As a result there's no guarantee that what's left will be enough to identify the site.
 
@@ -133,7 +133,7 @@ will block any attempt to log in as `admin` before most of the core WordPress co
 
 If you're running PHP 7, you can now specify an array of users instead:
 
-  define('WP_FAIL2BAN_BLOCKED_USERS',['admin','another','user']);
+	define('WP_FAIL2BAN_BLOCKED_USERS',['admin','another','user']);
 
 = WP_FAIL2BAN_PROXIES – what’s it all about? =
 
@@ -171,7 +171,7 @@ By default, *WPf2b* uses LOG_USER for logging pingbacks. If you'd rather it used
 
 *WPf2b* can now log comments. To enable this feature, add the following to `wp-config.php`:
 
-  define('WP_FAIL2BAN_LOG_COMMENTS',true);
+	define('WP_FAIL2BAN_LOG_COMMENTS',true);
 
 By default, *WPf2b* uses LOG_USER for logging comments. If you'd rather it used a different facility you can change it by adding something like the following to `wp-config.php`:
 
@@ -192,6 +192,15 @@ By default, *WPf2b* uses LOG_AUTH for logging authentication success or failure.
 	define('WP_FAIL2BAN_AUTH_LOG',LOG_AUTHPRIV);
 
 == Changelog ==
+
+= 3.6.0 =
+* The filter files are now generated from PHPDoc in the code. There were too many times when the filters were out of sync with the code (programmer error) - this should resolve that by bringing the patterns closer to the code that emits them.
+* Added PHPUnit tests. 100% code coverage, with the exception of WP_FAIL2BAN_PROXIES which is quite hard to test properly.
+
+* Bugfix for `wordpress-soft.conf`.
+* Add `WP_FAIL2BAN_XMLRPC_LOG`.
+* Add `WP_FAIL2BAN_REMOTE_ADDR`.
+* `WP_FAIL2BAN_PROXIES` now supports an array of IPs with PHP 7.
 
 = 3.5.3 =
 * Bugfix for `wordpress-hard.conf`.
@@ -264,6 +273,9 @@ By default, *WPf2b* uses LOG_AUTH for logging authentication success or failure.
 
 == Upgrade Notice ==
 
+= 3.6.0 =
+You will need up update your `fail2ban` filters.
+
 = 3.5.3 =
 You will need up update your `fail2ban` filters.
 
@@ -299,3 +311,4 @@ Bugfix in experimental code; still an experimental release.
 
 = 2.0.0 =
 This is an experimental release. If your current version is working and you're not interested in the new features, skip this version - wait for 2.1.0. For those that do want to test this release, note that `wordpress.conf` has changed - you'll need to copy it to `fail2ban/filters.d` again.
+
