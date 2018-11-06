@@ -2,7 +2,6 @@
 
 namespace org\lecklider\charles\wordpress\wp_fail2ban
 {
-    define('ARRAY_A', true);
     /**
      * @todo Use this when phpunit can handle stderr
      */
@@ -73,10 +72,7 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban\phpunit
 {
     function request($url, $data = null)
     {
-        $fp = fopen('/var/log/auth.log', 'r');
-        fseek($fp, 0, SEEK_END);
-
-        $res = curl_init('http://dev-wordpress.local/'.$url);
+        $res = curl_init(getenv('WP_FAIL2BAN_TESTSITE').$url);
         if (!is_null($data)) {
             curl_setopt($res, CURLOPT_POST, true);
             curl_setopt($res, CURLOPT_POSTFIELDS, $data);
@@ -86,16 +82,27 @@ namespace org\lecklider\charles\wordpress\wp_fail2ban\phpunit
         curl_exec($res);
         $http = ob_get_clean();
 
-        while($line = fgets($fp)) {
-            echo $line;
+        $fp = fopen('/var/log/auth.log', 'r');
+        $pos = -2;
+        $line = $t = '';
+        while ($t != "\n") {
+            $line = $t.$line;
+            fseek($fp, $pos, SEEK_END);
+            $t = fgetc($fp);
+            $pos--;
         }
-
         fclose($fp);
+
+        echo $line;
     }
 }
 
 namespace
 {
+    define('ARRAY_A', true);
+    define('XMLRPC_REQUEST', true);
+    define('WP_FAIL2BAN_TRUNCATE_HOST', 10);
+
     $_SERVER['HTTP_HOST'] = 'phpunit.local';
     $_SERVER['REMOTE_ADDR'] = '255.255.255.255';
 }
