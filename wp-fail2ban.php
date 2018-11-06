@@ -1,8 +1,8 @@
 <?php
 /*
  * Plugin Name: WP fail2ban
- * Plugin URI: https://charles.lecklider.org/wordpress/wp-fail2ban/
- * Description: Write all login attempts to syslog for integration with fail2ban.
+ * Plugin URI: https://github.com/invisnet/wp-fail2ban
+ * Description: Write a myriad of WordPress events to syslog for integration with fail2ban.
  * Text Domain: wp-fail2ban
  * Version: 3.6.0
  * Author: Charles Lecklider
@@ -12,7 +12,7 @@
  */
 
 /*
- *  Copyright 2012-17  Charles Lecklider  (email : wordpress@charles.lecklider.org)
+ *  Copyright 2012-18  Charles Lecklider  (email : wordpress@charles.lecklider.org)
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License, version 2, as
@@ -42,10 +42,11 @@ define('WP_FAIL2BAN', true);
 /**
  * Allow custom openlog options. 
  * e.g. you may not want the PID if logging remotely. 
- * @since 3.5.0
+ * @since 3.5.0 
+ * @since 3.6.0	Add LOG_NDELAY 
  */
 if (!defined('WP_FAIL2BAN_OPENLOG_OPTIONS')) {
-    define('WP_FAIL2BAN_OPENLOG_OPTIONS', LOG_PID);
+    define('WP_FAIL2BAN_OPENLOG_OPTIONS', LOG_PID|LOG_NDELAY);
 }
 /**
  * Make sure all custom logs are defined.
@@ -136,7 +137,7 @@ function remote_addr()
             $proxies = (is_array(WP_FAIL2BAN_PROXIES))
                         ? WP_FAIL2BAN_PROXIES
                         : explode(',', WP_FAIL2BAN_PROXIES);
-            foreach($proxies as $proxy) {
+            foreach ($proxies as $proxy) {
                 if (2 == count($cidr = explode('/', $proxy))) {
                     $net = ip2long($cidr[0]);
                     $mask = ~ ( pow(2, (32 - $cidr[1])) - 1 );
@@ -331,7 +332,7 @@ if (defined('XMLRPC_REQUEST') && true === XMLRPC_REQUEST) {
      * @since 3.6.0
      */
     if (defined('WP_FAIL2BAN_XMLRPC_LOG')) {
-        if (false === ($fp = fopen(WP_FAIL2BAN_XMLRPC_LOG,'a+'))) {
+        if (false === ($fp = fopen(WP_FAIL2BAN_XMLRPC_LOG, 'a+'))) {
             // TODO: decided whether to log this
         } else {
             fprintf($fp, "# ---\n# Date: %s\n# IP: %s\n\n%s\n", date(DATE_ATOM), remote_addr(), $HTTP_RAW_POST_DATA);
@@ -375,5 +376,5 @@ function wp_login_failed($username)
     openlog();
     syslog(LOG_NOTICE, $msg);
 }
-add_action('wp_login_failed', __NAMESPACE__.'\wp_login_failed', 1);
+add_action('wp_login_failed', __NAMESPACE__.'\wp_login_failed');
 

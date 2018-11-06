@@ -1,5 +1,8 @@
 .svn
-makefile
-wp-fail2ban.php.sig
-wp-fail2ban@md
+docs/
+test/index.html
+test/output/
 vendor/
+*.vp*
+*.vtg
+

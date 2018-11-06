@@ -45,7 +45,7 @@ ignoreregex =
 
 # DEV Notes:
 # Requires the 'WP fail2ban' plugin:
-# https://wordpress.org/plugins/wp-fail2ban/
+# https://github.com/invisnet/wp-fail2ban/
 #
 # Author: Charles Lecklider
 
