@@ -17,7 +17,7 @@ class BlockUserEnumerationTest extends TestCase
     {
         $query = new query();
         $query->query_vars['author'] = 1;
-        $this->expectOutputRegex('/\d+|Blocked user enumeration attempt from 255.255.255.255/');
+        $this->expectOutputRegex('/\d+\|Blocked user enumeration attempt from 255.255.255.255/');
         parse_request($query);
     }
 

@@ -17,13 +17,13 @@ class LogSpamTest extends TestCase
 
     function testSpam()
     {
-        $this->expectOutputRegex('/\d+|Spam comment 1 from 255.255.255.255/');
+        $this->expectOutputRegex('/\d+\|Spam comment 1 from 255.255.255.255/');
         log_spam_comment(1, 'spam');
     }
 
     function testCommentLog()
     {
-        $this->expectOutputRegex('/\d+|Comment \d+ from 255.255.255.255/');
+        $this->expectOutputRegex('/\d+\|Comment \d+ from 255.255.255.255/');
         notify_post_author(false, 1);
     }
 }

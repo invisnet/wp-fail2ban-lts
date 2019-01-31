@@ -9,7 +9,7 @@ class LogPingbacksTest extends TestCase
 {
     function testPingback()
     {
-        $this->expectOutputRegex('/\d+|Pingback requested from 255.255.255.255/');
+        $this->expectOutputRegex('/\d+\|Pingback requested from 255.255.255.255/');
         xmlrpc_call('pingback.ping');
     }
 

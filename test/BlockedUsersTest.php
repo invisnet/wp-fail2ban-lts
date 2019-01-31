@@ -16,7 +16,7 @@ class BlockedUsersTest extends TestCase
     {
         define('WP_FAIL2BAN_BLOCKED_USERS', '^blocked$');
 
-        $this->expectOutputRegex('/\d+|Blocked authentication attempt for blocked from 255.255.255.255/');
+        $this->expectOutputRegex('/\d+\|Blocked authentication attempt for blocked from 255.255.255.255/');
         authenticate('user', 'blocked', 'password');
     }
 
@@ -38,7 +38,7 @@ class BlockedUsersTest extends TestCase
     {
         define('WP_FAIL2BAN_BLOCKED_USERS', ['a','b','c']);
 
-        $this->expectOutputRegex('/\d+|Blocked authentication attempt for b from 255.255.255.255/');
+        $this->expectOutputRegex('/\d+\|Blocked authentication attempt for b from 255.255.255.255/');
         authenticate('user', 'b', 'password');
     }
 

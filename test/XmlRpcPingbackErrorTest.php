@@ -15,7 +15,7 @@ class XmlRpcPingbackErrorTest extends TestCase
     {
         $ixr_error = new ixr_error();
 
-        $this->expectOutputRegex('/\d+|Pingback error 42 generated from 255.255.255.255/');
+        $this->expectOutputRegex('/\d+\|Pingback error 42 generated from 255.255.255.255/');
         xmlrpc_pingback_error($ixr_error);
     }
 
